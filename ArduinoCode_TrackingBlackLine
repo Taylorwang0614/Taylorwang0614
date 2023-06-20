@@ -1,89 +1,57 @@
-//定义好引脚
-#define Left_Motor 5  //左电机控制引脚A
-#define Right_Motor 6 //右电机控制引脚B
+#include <Motor.h>
 
-#define L1 10 //循迹模块左界设置在A1口
-#define L2 9  //循迹模块左中设置在A2口
-#define L3 8  //循迹模块右中设置在A3口
-#define L4 7  //循迹模块右界设置在A4口
+//定义红外光电传感器引脚
+#define LEFT_SENSOR A0
+#define RIGHT_SENSOR A1
 
-int left_sensorValue;   //左侧传感器的值
-int leftMid_sensorValue; //左中侧传感器的值
-int rightMid_sensorValue;//右中侧传感器的值
-int right_sensorValue;  //右侧传感器的值
+//定义舵机引脚
+#define SERVO_PIN 9
 
-void setup()
-{
-  pinMode(Left_Motor, OUTPUT);
-  pinMode(Right_Motor, OUTPUT);
+//定义电机引脚
+AF_DCMotor motor(1);
+AF_DCMotor motor2(2);
+
+int leftSensorValue = 0;
+int rightSensorValue = 0;
+
+void setup() {
+  Serial.begin(9600);
+
+  //设置电机速度
+  motor.setSpeed(150);
+  motor2.setSpeed(150);
   
-  pinMode(L1, INPUT);
-  pinMode(L2, INPUT);
-  pinMode(L3, INPUT);
-  pinMode(L4, INPUT);
-  
-  Serial.begin(9600);   //开启串口通信
+  //将舵机归位
+  sweepServo();
 }
 
-void loop()
-{
-  left_sensorValue = analogRead(L1);
-  leftMid_sensorValue = analogRead(L2);
-  rightMid_sensorValue = analogRead(L3);
-  right_sensorValue = analogRead(L4);
+void loop() {
+  //读取左右红外传感器数值
+  leftSensorValue = analogRead(LEFT_SENSOR);
+  rightSensorValue = analogRead(RIGHT_SENSOR);
 
-  //全部在黑线上
-  if(right_sensorValue < 400 && left_sensorValue < 400 && rightMid_sensorValue < 400 && leftMid_sensorValue < 400)
-    {
-      digitalWrite(Left_Motor, LOW);
-      digitalWrite(Right_Motor, LOW);
-     }
+  //判断小车位置，偏向左侧则向右转，偏向右侧则向左转
+  if (leftSensorValue > rightSensorValue) {
+    motor.run(FORWARD);
+    motor2.run(BACKWARD);
+  }
+  else if (rightSensorValue > leftSensorValue) {
+    motor.run(BACKWARD);
+    motor2.run(FORWARD);
+  }
+  else {
+    motor.run(FORWARD);
+    motor2.run(FORWARD);
+  }
 
-  //最左侧传感器在黑线上，需要左转
-  if(right_sensorValue <400 && left_sensorValue > 600 && rightMid_sensorValue < 400 && leftMid_sensorValue < 400)
-    {
-      digitalWrite(Left_Motor, HIGH);
-      digitalWrite(Right_Motor, LOW);
-    }
-  
-  //右侧传感器在黑线上，需要右转
-  if(right_sensorValue > 600 && left_sensorValue <400 && rightMid_sensorValue < 400 && leftMid_sensorValue < 400)
-    {
-      digitalWrite(Left_Motor, LOW);
-      digitalWrite(Right_Motor, HIGH);  
-     }
-  
-  //左中和右中侧有一个在黑线上，需要左转
-  if((leftMid_sensorValue < 400 && rightMid_sensorValue > 600)|| (leftMid_sensorValue > 600 && rightMid_sensorValue < 400))
-    {
-      digitalWrite(Left_Motor, HIGH);
-      digitalWrite(Right_Motor, LOW); 
-     }
+  //延时以保证小车稳定行驶
+  delay(100);
+}
 
-  //左中和右中侧都在黑线上，需要后退
-  if(leftMid_sensorValue <400 && rightMid_sensorValue <400)
-    {
-      digitalWrite(Left_Motor, HIGH);
-      digitalWrite(Right_Motor, HIGH); 
-     }
-
-   //没有在线上，前进
-  if(left_sensorValue > 400 && leftMid_sensorValue > 400 && rightMid_sensorValue > 400 && right_sensorValue > 400)
-    {
-      digitalWrite(Left_Motor, HIGH);
-      digitalWrite(Right_Motor, HIGH); 
-     }
-
-   //显示红外传感器模块采集的信号值
-  Serial.println("--------------------");
-  Serial.print("left_sensorValue: ");
-  Serial.println(left_sensorValue);
-  Serial.print("leftMid_sensorValue: ");
-  Serial.println(leftMid_sensorValue);
-  Serial.print("rightMid_sensorValue: ");
-  Serial.println(rightMid_sensorValue);
-  Serial.print("right_sensorValue: ");
-  Serial.println(right_sensorValue);
-  delay(100);  
-
-在地上贴黑线的情况下，代码中传感器检测黑线的逻辑需要做出相应的调整。在这个代码中，我们将左右侧、左中右中四个传感器的阈值设为400。同时，需要注意在测试时调整红外传感器的位置，并保持传感器对地面的距离相同。如果实际情况与代码不符，您可以进行相应的修改。同时，我们还添加了串口通讯的代码来验证传感器是否正确地检测到黑线。 
+//将舵机归位的函数
+void sweepServo() {
+  for (int i = 0; i <= 180; i++) {
+    analogWrite(SERVO_PIN, i);
+    delay(15);
+  }
+}
