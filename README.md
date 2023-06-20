@@ -1,6 +1,6 @@
-Hi, I’m Zhengguang Wang
-I’m currently studying at Dalian University of Technology
-I’m looking to collaborate on digital twin technology
+-Hi, I’m Zhengguang Wang
+-I’m currently studying at Dalian University of Technology
+-I’m looking to collaborate on digital twin technology
 
 
 <!---
