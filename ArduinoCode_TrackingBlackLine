@@ -1,4 +1,6 @@
-#include <Motor.h>
+//Written by Zhengguang Wang in DUT at 2023/06/20
+
+#include <Servo.h>
 
 //定义红外光电传感器引脚
 #define LEFT_SENSOR A0
@@ -7,51 +9,37 @@
 //定义舵机引脚
 #define SERVO_PIN 9
 
-//定义电机引脚
-AF_DCMotor motor(1);
-AF_DCMotor motor2(2);
+//定义舵机对象
+Servo servo;
 
 int leftSensorValue = 0;
 int rightSensorValue = 0;
 
 void setup() {
   Serial.begin(9600);
-
-  //设置电机速度
-  motor.setSpeed(150);
-  motor2.setSpeed(150);
-  
-  //将舵机归位
-  sweepServo();
+  //将舵机连接到指定引脚
+  servo.attach(SERVO_PIN);
 }
 
 void loop() {
-  //读取左右红外传感器数值
+  //取左右红外传感器数值
   leftSensorValue = analogRead(LEFT_SENSOR);
   rightSensorValue = analogRead(RIGHT_SENSOR);
 
-  //判断小车位置，偏向左侧则向右转，偏向右侧则向左转
+  //判断小车位置，偏向左则向右转，偏向右则向左转
   if (leftSensorValue > rightSensorValue) {
-    motor.run(FORWARD);
-    motor2.run(BACKWARD);
+    //舵机向右转
+    servo.write(45);
   }
   else if (rightSensorValue > leftSensorValue) {
-    motor.run(BACKWARD);
-    motor2.run(FORWARD);
+    //舵机向左转
+    servo.write(135);
   }
   else {
-    motor.run(FORWARD);
-    motor2.run(FORWARD);
+    //舵机归位
+    servo.write(90);
   }
 
   //延时以保证小车稳定行驶
   delay(100);
-}
-
-//将舵机归位的函数
-void sweepServo() {
-  for (int i = 0; i <= 180; i++) {
-    analogWrite(SERVO_PIN, i);
-    delay(15);
-  }
 }
