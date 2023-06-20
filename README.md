@@ -1,5 +1,5 @@
-Hi, I’m Zhengguang Wang@Taylorwang0614
-I’m currently studying in Dalian University of Technology
+Hi, I’m Zhengguang Wang
+I’m currently studying at Dalian University of Technology
 I’m looking to collaborate on digital twin technology
 
 
